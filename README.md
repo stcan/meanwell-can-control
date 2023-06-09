@@ -1,7 +1,7 @@
 # bic2200-can-control
 Tool for controlling Mean Well BIC-2200-CAN  Bidirectional Power Supply Series
 
-tested only with the 24V Version BIC-2200-CAN-24
+Tested only with the 24V Version BIC-2200-CAN-24
 Please note:  this software to control the BIC-2200 is not yet complete and also not fully tested. The BIC-2200 should not be operated unattended. There is no error handling yet !!!
 
 What is missing:
@@ -10,8 +10,7 @@ What is missing:
 - variables plausibility check
 - programming missing functions
 
-Usage:
-       ./bic22.py parameter value
+       Usage: ./bic22.py parameter value
        
        on                   -- output on
        off                  -- output off
@@ -37,7 +36,9 @@ Usage:
        can_up               -- start can bus
        can_down             -- shut can bus down
 
-       <value> = amps oder volts * 100 --> 25,66V = 2566
-         
-         
-         
+       <value> = amps oder volts * 100 --> 25,66V = 2566 
+        
+# charge_control.py        
+Tool to control battery charging and discharging depending on the electricity meter. 
+
+Do not use without adaptation to local conditions and only under supervision! 
