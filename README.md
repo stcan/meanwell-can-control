@@ -10,8 +10,7 @@ What is missing:
 - variables plausibility check
 - programming missing functions
 
-Usage:
-        ./bic22.py parameter value
+Usage: ./bic22.py parameter value
        
        on                   -- output on
        off                  -- output off
