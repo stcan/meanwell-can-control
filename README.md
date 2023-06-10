@@ -39,6 +39,5 @@ What is missing:
        <value> = amps oder volts * 100 --> 25,66V = 2566 
         
 # charge_control.py        
-Tool to control battery charging and discharging depending on the electricity meter. 
-
+Example code to control battery charging and discharging depending on the electricity meter. 
 Do not use without adaptation to local conditions and only under supervision! 
