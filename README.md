@@ -1,5 +1,5 @@
 # bic2200-can-control
-Tool to control Mean Well BIC-2200-CAN  Bidirectional Power Supplys
+Tool to control BIC-2200-CAN  Bidirectional Power Supplys from Mean Well
 
 Tested with the 24V Version BIC-2200-CAN-24
 
@@ -42,3 +42,5 @@ What is missing:
 # example_charge_control.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
 Do not use without adaptation to local conditions and only under supervision! 
+
+# All script comes along with no warranty at all.
