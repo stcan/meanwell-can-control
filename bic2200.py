@@ -15,6 +15,7 @@
 # - current and voltage maximum settings
 
 # steve 08.06.2023  Version 0.2.1
+# steve 10.06.2023  Version 0.2.2
 
 import os
 import can
