@@ -1,8 +1,9 @@
 # bic2200-can-control
 Tool to control Mean Well BIC-2200-CAN  Bidirectional Power Supplys
 
-Tested only with the 24V Version BIC-2200-CAN-24
-Please note:  this software to control the BIC-2200 is not yet complete and also not fully tested. The BIC-2200 should not be operated unattended. There is no error handling yet !!!
+Tested with the 24V Version BIC-2200-CAN-24
+
+Please note:  this tool to control the BIC-2200 is not yet complete and also not fully tested. Do not use without monitoring the BIC-2200. There is no error handling yet !!!
 
 What is missing:
 - status queries
