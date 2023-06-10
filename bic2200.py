@@ -8,6 +8,7 @@
 # There is no error handling yet !!!
 
 # What is missing:
+# - code for programming BIC2200 mode settings
 # - status queries
 # - error handling
 # - variables plausibility check
