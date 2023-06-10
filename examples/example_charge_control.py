@@ -26,9 +26,7 @@ p = subprocess.run(["./bic2200.py", "dvset", str(DischargeVoltage)])
 
 def control_power():
 
-    #-------------------------------------------------------------- Read Power Meter
-    # print ("Control Charge/Discharge")
-
+    #--------------------------------------------- Read Power Meter
     stromzaehler = requests.get("http://stromzaehler.fritz.box/cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
