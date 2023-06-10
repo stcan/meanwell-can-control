@@ -43,4 +43,4 @@ What is missing:
 Example code to control battery charging and discharging depending on the electricity meter. 
 Do not use without adaptation to local conditions and only under supervision! 
 
-# All script comes along with no warranty at all.
+- All scripts are without any warranty. Use at your own risk
