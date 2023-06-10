@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 # example for using bic2200.py
+# Not suitable for productive use. 
+# Use for demo purposes only!
 
 import time
 import schedule
