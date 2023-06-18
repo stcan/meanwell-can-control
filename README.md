@@ -1,5 +1,5 @@
 # meanwell-can-control
-Tool to control Bidirectional Power Supplys from Mean Well via CAN Bus
+Tool to control Power Supplys from Mean Well via CAN Bus
 
 Tested with the 24V Version BIC-2200-CAN-24 and NPB Series Charger
 
