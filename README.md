@@ -1,17 +1,23 @@
 # meanwell-can-control
-Tool to control Bidirectional Power Supplys from Mean Well via CAN Bus
+Tool to control Meanwell CAN Bidirectional Power Supplys and Charger via CAN Bus
 
-Tested with the 24V Version BIC-2200-CAN-24 and NPB Series Charger
+Tested with the Version BIC-2200-CAN-24 and NPB-1200-24 PSU/Charger
 
-Please note:  this tool to control the BIC-2200 is not yet complete and also not fully tested. Do not use without monitoring the BIC-2200. There is no error handling yet !!!
+Please note:  this tool to control read and write settings to the CAN device 
+It is not yet complete and also not fully tested. 
+Do not use without monitoring the device. 
+There is no error handling yet !!!
+Use at your own risk !
 
 What is missing:
-- status queries
 - variables plausibility check
-- programming missing functions
-
-       Usage: ./bic2200.py parameter value
-       
+	   
+	   Use ./ChargeScript for automatic charge / discharge
+	   See config paramter inside the script
+	   
+	   Usage: ./mwcancmd.py parameter value
+       To use a standalone cmd to the mw device
+	   
        on                   -- output on
        off                  -- output off
 
@@ -33,8 +39,6 @@ What is missing:
        discharge            -- set direction discharge battery
 
        tempread             -- read power supply temperature
-       can_up               -- start can bus
-       can_down             -- shut can bus down
 
        <value> = amps oder volts * 100 --> 25,66V = 2566 
         
