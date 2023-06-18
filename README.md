@@ -1,4 +1,4 @@
-# bic2200-can-control
+# meanwell-can-control
 Tool to control Bidirectional Power Supplys from Mean Well via CAN Bus
 
 Tested with the 24V Version BIC-2200-CAN-24 and NPB Series Charger
@@ -7,7 +7,6 @@ Please note:  this tool to control the BIC-2200 is not yet complete and also not
 
 What is missing:
 - status queries
-- error handling
 - variables plausibility check
 - programming missing functions
 
