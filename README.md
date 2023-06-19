@@ -1,7 +1,7 @@
 # meanwell-can-control
 Tool to control Power Supplys from Mean Well via CAN Bus
 
-Tested with the 24V Version BIC-2200-CAN-24 and NPB Series Charger
+Tested with the 24V Version BIC-2200-CAN-24 and NPB-abc0 Series Charger
 
 Please note:  this tool is not yet complete and also not fully tested. Do not use without monitoring the devices. There is no error handling yet !!!
 
