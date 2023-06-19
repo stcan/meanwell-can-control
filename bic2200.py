@@ -21,7 +21,8 @@
 #       - new config area   
 # steve 16.06.2023  Version 0.2.4
 #       - fault and status queries    
-#       
+# steve 19.06.2023  Version 0.2.4
+#       - fault queries completed  
 
 import os
 import can
@@ -429,11 +430,65 @@ def faultread():
 
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
-    v = can_receive()
-    
+    sval = can_receive()
+
+    # deconding
+    s = get_normalized_bit(int(sval), bit_index=0)
+    if s == 0:
+        print ("FAN_FAIL: Fan working normally")
+    else:
+        print ("FAN_FAIL: Fan locked")
+
+    s = get_normalized_bit(int(sval), bit_index=1)
+    if s == 0:
+        print ("OTP: Internal temperature normal")
+    else:
+        print ("OTP: Internal temperature abnormal")
+
+    s = get_normalized_bit(int(sval), bit_index=2)
+    if s == 0:
+        print ("OVP: DC voltage normal")
+    else:
+        print ("OVP: DC over voltage protected")
+
+    s = get_normalized_bit(int(sval), bit_index=3)
+    if s == 0:
+        print ("OLP: DC current normal")
+    else:
+        print ("OLP: DC over current protected")
+
+    s = get_normalized_bit(int(sval), bit_index=4)
+    if s == 0:
+        print ("SHORT: Short circuit do not exist")
+    else:
+        print ("SHORT: Short circuit protected")
+
+    s = get_normalized_bit(int(sval), bit_index=5)
+    if s == 0:
+        print ("AC_FAIL: AC range normal")
+    else:
+        print ("AC_FAIL: AC range abnormal")
+
+    s = get_normalized_bit(int(sval), bit_index=6)
+    if s == 0:
+        print ("OP_OFF: DC turned on")
+    else:
+        print ("OP_OFF: DC turned off")
+
+    s = get_normalized_bit(int(sval), bit_index=7)
+    if s == 0:
+        print ("HI_TEMP: Internal temperature normal")
+    else:
+        print ("HI_TEMP: Internal temperature abnormal")
  
-    return v
-    
+    s = get_normalized_bit(int(sval), bit_index=8)
+    if s == 0:
+        print ("HV_OVP: HV voltage normal")
+    else:
+        print ("HV_OVP: HV over voltage preotected")
+
+
+ 
 
 def command_line_argument():
     if len (sys.argv) == 1:
