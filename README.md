@@ -3,12 +3,11 @@ Tool to control Power Supplys from Mean Well via CAN Bus
 
 Tested with the 24V Version BIC-2200-CAN-24 and NPB Series Charger
 
-Please note:  this tool to control the BIC-2200 is not yet complete and also not fully tested. Do not use without monitoring the BIC-2200. There is no error handling yet !!!
+Please note:  this tool is not yet complete and also not fully tested. Do not use without monitoring the devices. There is no error handling yet !!!
 
 What is missing:
-- status queries
 - variables plausibility check
-- programming missing functions
+- some functions
 
        Usage: ./bic2200.py parameter value
        
@@ -33,6 +32,10 @@ What is missing:
        discharge            -- set direction discharge battery
 
        tempread             -- read power supply temperature
+       typeread             -- read power supply type
+       statusread           -- read power supply status
+       faultread            -- read power supply fault status
+
        can_up               -- start can bus
        can_down             -- shut can bus down
 
