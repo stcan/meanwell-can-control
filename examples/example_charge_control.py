@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# example for using bic2200.py
+# example to understand how to use bic2200.py
 # Not suitable for productive use. 
-# Use for demo purposes only!
+# Use for demo purposes only 
 
 import time
 import schedule
@@ -15,9 +15,9 @@ from func_timeout import func_timeout, FunctionTimedOut
 
 
 ChargeVoltage = 2760
-DischargeVoltage = 2570
-MaxChargeCurrent = 2500
-MaxDischargeCurrent = 2500
+DischargeVoltage = 2580        # leaves about 20% remaining capacity in the battery
+MaxChargeCurrent = 2500        # 25A
+MaxDischargeCurrent = 1000     # 10A
 
 # Init CAN Bus
 p = subprocess.run(["./bic2200.py" , "can_up"])
@@ -28,8 +28,8 @@ p = subprocess.run(["./bic2200.py", "dvset", str(DischargeVoltage)])
 
 def control_power():
 
-    #--------------------------------------------- Read Power Meter
-    stromzaehler = requests.get("http://stromzaehler.fritz.box/cm?cmnd=status%2010")
+    #---------------------------------------------Read  ESP Tasmota Power Meter
+    stromzaehler = requests.get("http:// - your ip-address - /cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
     # zeit = (stromz1['Time'])
@@ -82,7 +82,7 @@ def control_power():
 
 
 
-schedule.every(4).seconds.do(control_power)      # Start every 5s
+schedule.every(3).seconds.do(control_power)      # Start every 3s
 
 while True:
      schedule.run_pending()
