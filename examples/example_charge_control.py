@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 # example to understand how to use bic2200.py
-# Not suitable for productive use. 
-# Use for demo purposes only 
+# Not suitable for productive use but still working
+# Please use this script for demo only
 
 import time
 import schedule
@@ -14,7 +14,7 @@ import datetime
 from func_timeout import func_timeout, FunctionTimedOut
 
 
-ChargeVoltage = 2760
+ChargeVoltage = 2760           # Maximum charge voltage
 DischargeVoltage = 2580        # leaves about 20% remaining capacity in the battery
 MaxChargeCurrent = 2500        # 25A
 MaxDischargeCurrent = 1000     # 10A
@@ -25,6 +25,7 @@ p = subprocess.run(["./bic2200.py" , "can_up"])
 # Write Charge / Discharge Voltages
 p = subprocess.run(["./bic2200.py", "cvset", str(ChargeVoltage)])
 p = subprocess.run(["./bic2200.py", "dvset", str(DischargeVoltage)])
+
 
 def control_power():
 
@@ -39,7 +40,7 @@ def control_power():
     zeit = datetime.datetime.now()
     print (str(zeit) + ": Power: " + str(Power) + " W")
 
-    #-------------------------------------------------------------- Read BIC-2200
+    #---------------------------------------------------- Read BIC-2200 VOltage and current
     
     v  = subprocess.run(["./bic2200.py", "vread"], capture_output=True, text=True)
     v_now = float(v.stdout)
@@ -47,7 +48,7 @@ def control_power():
     a_now = float(a.stdout)
     print ("BIC-2200 Volt: ", v_now/100," Ampere: ", a_now/100)
     
-    #-------------------------------------------------------------- Charge / Discharge
+    #---------------------------------------------------- Controlling  Charge / Discharge  
 
     DiffCurrent = Power*10000/v_now*(-1)
     Current = DiffCurrent + a_now
@@ -71,20 +72,15 @@ def control_power():
         p = subprocess.run(["./bic2200.py" , "discharge"])
         c = subprocess.run(["./bic2200.py" , "dcset", str(IntCurrent)]) 
 
-    
+ 
 
-    # ---------------------------------------------------------------------------Logging 
+    # ------------------------------------------------------------Logging what might be interesting
     logfile = open('./battery.log','a')
     logfile.write(str(zeit) + ": PowerMeter:" + str(Power) + ":W: Battery_V:" + str(v_now/100) + ":V: Battery_I:" + str(a_now/100) + ":A: I Calc:" + str(Current/100)+":A \n")
     logfile.close()
 
 
-
-
-
-schedule.every(3).seconds.do(control_power)      # Start every 3s
+schedule.every(3).seconds.do(control_power)      # start the control routine every 3s
 
 while True:
      schedule.run_pending()
-
-
