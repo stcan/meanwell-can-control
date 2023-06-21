@@ -15,7 +15,7 @@ from func_timeout import func_timeout, FunctionTimedOut
 
 
 ChargeVoltage = 2760           # Maximum charge voltage
-DischargeVoltage = 2580        # leaves about 20% remaining capacity in the battery
+DischargeVoltage = 2580        # leaves about 25% remaining capacity in the battery
 MaxChargeCurrent = 2500        # 25A
 MaxDischargeCurrent = 1000     # 10A
 
