@@ -64,7 +64,7 @@ def control_power():
     #-------------------------------------------------------------- Read Power Meter
     # print ("Control Charge/Discharge")
 
-    stromzaehler = requests.get("http://stromzaehler.fritz.box/cm?cmnd=status%2010")
+    stromzaehler = requests.get("http:// --your power meter IP-- /cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
     # zeit = (stromz1['Time'])
