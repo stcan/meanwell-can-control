@@ -47,8 +47,6 @@ def control_power():
 
     #-------------------------------------------------------------- Read Config and Check Values
     config.read('./charge_control.conf')
-    ChargeVoltage = int(config.get('Settings', 'ChargeVoltage'))
-    DischargeVoltage = int(config.get('Settings', 'DischargeVoltage'))
     MaxChargeCurrent = int(config.get('Settings', 'MaxChargeCurrent'))
     MaxDischargeCurrent = int(config.get('Settings', 'MaxDischargeCurrent'))
 
