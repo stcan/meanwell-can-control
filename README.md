@@ -41,10 +41,10 @@ What is missing:
 
        <value> = amps oder volts * 100 --> 25,66V = 2566 
         
-# example_charge_control.py        
+# examples/example_charge_contro.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
 
-New feature : Control the max and min values for charge/discharge voltages and currents using the file: charge_control.conf
+New feature : Control the max and min values for charge/discharge voltages and currents using the file: examples/charge_control.conf
 
 
 Do not use without adaptation to local conditions and only under supervision! 
