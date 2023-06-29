@@ -1,36 +1,68 @@
 #!/usr/bin/env python3
 
-# example to understand how to use bic2200.py
-# Not suitable for productive use but still working
-# Please use this script for demo only
-
+# example for using bic2200.py
+# Version 0.4
+import sys
 import time
 import schedule
 import json
 import subprocess
 import requests
 import datetime
+import configparser
 
 from func_timeout import func_timeout, FunctionTimedOut
 
+# Safe values for voltages and currents , limit the values in charge_control.conf
+SafeChargeVoltage = 2790
+SafeDischargeVoltage = 2520
+SafeChargeCurrent = 2600
+SafeDischargeCurrent = 2600
 
-ChargeVoltage = 2760           # Maximum charge voltage
-DischargeVoltage = 2580        # leaves about 20% remaining capacity in the battery
-MaxChargeCurrent = 2500        # 25A
-MaxDischargeCurrent = 1000     # 10A
+config = configparser.ConfigParser()
+
+# First init Values from Config File
+config.read('./charge_control.conf')
+ChargeVoltage = int(config.get('Settings', 'ChargeVoltage'))
+DischargeVoltage = int(config.get('Settings', 'DischargeVoltage'))
+MaxChargeCurrent = int(config.get('Settings', 'MaxChargeCurrent'))
+MaxDischargeCurrent = int(config.get('Settings', 'MaxDischargeCurrent'))
 
 # Init CAN Bus
 p = subprocess.run(["./bic2200.py" , "can_up"])
 
-# Write Charge / Discharge Voltages
+# Check an write charge / discharge voltages
+if ChargeVoltage > SafeChargeVoltage:
+    ChargeVoltage = SafeChargeVoltage
+
+if DischargeVoltage < SafeDischargeVoltage:
+    DischargeVoltage = SafeDischargeVoltage
+    
 p = subprocess.run(["./bic2200.py", "cvset", str(ChargeVoltage)])
 p = subprocess.run(["./bic2200.py", "dvset", str(DischargeVoltage)])
 
-
 def control_power():
 
-    #---------------------------------------------Read  ESP Tasmota Power Meter
-    stromzaehler = requests.get("http:// - your ip-address - /cm?cmnd=status%2010")
+    #-------------------------------------------------------------- Read Config and Check Values
+    config.read('./charge_control.conf')
+    ChargeVoltage = int(config.get('Settings', 'ChargeVoltage'))
+    DischargeVoltage = int(config.get('Settings', 'DischargeVoltage'))
+    MaxChargeCurrent = int(config.get('Settings', 'MaxChargeCurrent'))
+    MaxDischargeCurrent = int(config.get('Settings', 'MaxDischargeCurrent'))
+
+    if MaxChargeCurrent > SafeChargeCurrent:
+        MaxChargeCurrent = SafeChargeCurrent
+        print ("Charge Current too big")
+
+    if MaxDischargeCurrent > SafeDischargeCurrent:
+        MaxDischargeCurrent = SafeDischargeCurrent
+        print ("Discharge Current too big")            
+    
+
+    #-------------------------------------------------------------- Read Power Meter
+    # print ("Control Charge/Discharge")
+
+    stromzaehler = requests.get("http:// --your Energy Meter IP-- /cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
     # zeit = (stromz1['Time'])
@@ -40,25 +72,28 @@ def control_power():
     zeit = datetime.datetime.now()
     print (str(zeit) + ": Power: " + str(Power) + " W")
 
-    #---------------------------------------------------- Read BIC-2200 VOltage and current
-    
-    v  = subprocess.run(["./bic2200.py", "vread"], capture_output=True, text=True)
-    v_now = float(v.stdout)
-    a  = subprocess.run(["./bic2200.py", "cread"], capture_output=True, text=True)
-    a_now = float(a.stdout)
-    print ("BIC-2200 Volt: ", v_now/100," Ampere: ", a_now/100)
-    
-    #---------------------------------------------------- Controlling  Charge / Discharge  
+    if Power > 20000:
+        Power = 20000
 
-    DiffCurrent = Power*10000/v_now*(-1)
-    Current = DiffCurrent + a_now
+    #-------------------------------------------------------------- Read BIC-2200
+    volt = subprocess.run(["./bic2200.py", "vread"], capture_output=True, text=True)
+    volt_now = float(volt.stdout)
+    amp = subprocess.run(["./bic2200.py", "cread"], capture_output=True, text=True)
+    amp_now = float(amp.stdout)
+    print ("BIC-2200 Volt: ", volt_now/100," Ampere: ", amp_now/100)
+    
+    #-------------------------------------------------------------- Charge / Discharge
+
+    DiffCurrent = Power*10000/volt_now*(-1)
+    Current = DiffCurrent + amp_now
     print ("Calc_Current: ", Current/100)
 
     if Current > 0:
         IntCurrent = int(Current)
 
         if IntCurrent >= MaxChargeCurrent:
-            IntCurrent = MaxChargeCurrent 
+            IntCurrent = MaxChargeCurrent
+            
 
         p = subprocess.run(["./bic2200.py" , "charge"])
         c = subprocess.run(["./bic2200.py" , "ccset" ,  str(IntCurrent)]) 
@@ -68,19 +103,24 @@ def control_power():
 
         if IntCurrent >= MaxDischargeCurrent:
             IntCurrent = MaxDischargeCurrent  
+        
 
         p = subprocess.run(["./bic2200.py" , "discharge"])
         c = subprocess.run(["./bic2200.py" , "dcset", str(IntCurrent)]) 
 
- 
+    
 
-    # ------------------------------------------------------------Logging what might be interesting
+    # ---------------------------------------------------------------------------Logging 
     logfile = open('./battery.log','a')
-    logfile.write(str(zeit) + ": PowerMeter:" + str(Power) + ":W: Battery_V:" + str(v_now/100) + ":V: Battery_I:" + str(a_now/100) + ":A: I Calc:" + str(Current/100)+":A \n")
+    logfile.write(str(zeit) + ": PowerMeter:" + str(Power) + ":W: Battery_V:" + str(volt_now/100) + ":V: Battery_I:" + str(amp_now/100) + ":A: I Calc:" + str(Current/100)+":A \n")
     logfile.close()
 
 
-schedule.every(3).seconds.do(control_power)      # start the control routine every 3s
+
+schedule.every(3).seconds.do(control_power)      # Aufruf der Regelroutine ca alle 3s
 
 while True:
      schedule.run_pending()
+     #time.sleep(1)
+
+

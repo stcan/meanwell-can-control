@@ -138,7 +138,7 @@ def can_down():
 # Operation function
 
 def operation(val):#0=off, 1=on
-    print ("turn output on")
+    # print ("turn output on/off")
     # Command Code 0x0000
     commandhighbyte = 0x00
     commandlowbyte = 0x00
