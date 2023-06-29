@@ -44,7 +44,7 @@ What is missing:
 # example_charge_control.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
 
-New feature : Control the max and min values for Charge/Discharge voltages and currents using the file charge_control.conf
+New feature : Control the max and min values for charge/discharge voltages and currents using the file: charge_control.conf
 
 
 Do not use without adaptation to local conditions and only under supervision! 
