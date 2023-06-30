@@ -14,7 +14,7 @@ import configparser
 from func_timeout import func_timeout, FunctionTimedOut
 
 # Safe values for voltages and currents limiting to high oder low values in the config file
-SafeChargeVoltage = 2790
+SafeChargeVoltage = 2750
 SafeDischargeVoltage = 2520
 SafeChargeCurrent = 2600
 SafeDischargeCurrent = 2600
