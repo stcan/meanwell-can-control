@@ -147,6 +147,8 @@ def operation(val):#0=off, 1=on
     can0.send(msg)
     return val
 
+
+
 def charge_voltage(rw,val=0xFFFF): #0=read, 1=set
     # print ("read/set charge voltage")
     # Command Code 0x0020
@@ -499,7 +501,7 @@ def command_line_argument():
         return
     
     if   sys.argv[1] in ['on']:        operation(1)
-    elif sys.argv[1] in ['off']:       operation(2)
+    elif sys.argv[1] in ['off']:       operation(0)
     elif sys.argv[1] in ['cvread']:    charge_voltage(0)
     elif sys.argv[1] in ['cvset']:     charge_voltage(1)
     elif sys.argv[1] in ['ccread']:    charge_current(0)
