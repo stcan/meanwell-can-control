@@ -39,7 +39,10 @@ What is missing:
        can_up               -- start can bus
        can_down             -- shut can bus down
 
+       init_mode            -- init BIC-2200 bi-directional battery mode
+
        <value> = amps oder volts * 100 --> 25,66V = 2566 
+
         
 # examples/example_charge_contro.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
