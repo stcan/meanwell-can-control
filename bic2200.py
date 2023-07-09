@@ -23,6 +23,8 @@
 #       - fault and status queries    
 # steve 19.06.2023  Version 0.2.4
 #       - fault queries completed  
+# steve 09.07.2023  Version 0.2.5
+#       - init_mode added   
 
 import os
 import can
@@ -93,7 +95,7 @@ def bic22_commands():
     print("")
     print("       <value> = amps oder volts * 100 --> 25,66V = 2566")
     print("")
-    print("       Version 0.2.4 ")
+    print("       Version 0.2.5 ")
 
 #########################################
 # gereral function
