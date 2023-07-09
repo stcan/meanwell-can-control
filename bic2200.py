@@ -27,6 +27,7 @@
 import os
 import can
 import sys
+import time
 
 error = 0
 
@@ -87,6 +88,8 @@ def bic22_commands():
     print("       faultread            -- read power supply fault status")    
     print("       can_up               -- start can bus")
     print("       can_down             -- shut can bus down")
+    print("")
+    print("       init_mode            -- init BIC-2200 bi-directional battery mode")
     print("")
     print("       <value> = amps oder volts * 100 --> 25,66V = 2566")
     print("")
@@ -287,6 +290,63 @@ def acvread():
     can0.send(msg)
     v = can_receive()
     return v
+
+
+def init_mode():
+
+    # Check CANBus communication mode
+    # Command Code 0x00C2
+    commandhighbyte = 0x00
+    commandlowbyte = 0xC2
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    cm = can_receive()
+
+    # Check the battery mode
+    # Command Code 0x0140
+    # Check Battery mode
+    commandhighbyte = 0x01
+    commandlowbyte = 0x40
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    bm = can_receive()
+    
+    if ((bm == "0001") and (cm == "0003")):
+        print ("The BIC-2200-xx-CAN is alread in the bi-directional battery mode with CANBus control. Nothing to do")
+    
+    else:
+        
+        print ("Set the Charge/Discharge Mode of the BIC-2200-xx-CAN.")
+        print ("Only needed once to set up the Device and to configure the 'bi-directional battery mode'.")
+        print ("It is recommended do disconnect the battery/load for this operation.")
+        print ("Check manual if you are not shure what is the correct mode!")
+        modein = input ("Do you want to change the mode? yes/no : ")
+        
+        if modein == "yes":
+            # Command Code 0x00C2
+            # Activate CANBus communication mode
+            commandhighbyte = 0x00
+            commandlowbyte = 0xC2
+            val = 0x03
+            msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,val], is_extended_id=True)
+            #can0.send(msg)
+    
+            time.sleep(1)
+
+            # Command Code 0x0140
+            # Set bi-directional battery mode
+            commandhighbyte = 0x01
+            commandlowbyte = 0x40
+            val = 0x01
+
+            msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,val], is_extended_id=True)
+            #can0.send(msg)
+
+            print ("Repower the device to activate the new mode")
+
+
 
 def BIC_chargemode(val): #0=charge, 1=discharge
     # print ("set direction charge")
@@ -521,6 +581,7 @@ def command_line_argument():
     elif sys.argv[1] in ['faultread']: faultread()
     elif sys.argv[1] in ['can_up']:    can_up()
     elif sys.argv[1] in ['can_down']:  can_down()
+    elif sys.argv[1] in ['init_mode']: init_mode()
     elif sys.argv[1] in ['NPB_chargemode']: NPB_chargemode(int(sys.argv[2]))
     else:
         print("")
