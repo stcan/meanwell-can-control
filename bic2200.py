@@ -8,7 +8,6 @@
 # There is no error handling yet !!!
 
 # What is missing:
-# - code for programming BIC2200 mode settings
 # - error handling
 # - variables plausibility check
 # - programming missing functions 
@@ -25,6 +24,11 @@
 #       - fault queries completed  
 # steve 09.07.2023  Version 0.2.5
 #       - init_mode added   
+# steve 20.07.2023 Version 0.2.6
+#       - direction read
+#       - status read
+#       - can_receive_byte  
+       
 
 import os
 import can
@@ -66,6 +70,7 @@ def bic22_commands():
     print("")
     print("       on                   -- output on")
     print("       off                  -- output off")
+    print("       statusread           -- read output status 1:on 0:off")
     print("")
     print("       cvread               -- read charge voltage setting")
     print("       cvset <value>        -- set charge voltage")
@@ -83,6 +88,7 @@ def bic22_commands():
     print("")
     print("       charge               -- set direction charge battery")
     print("       discharge            -- set direction discharge battery")
+    print("       dirread              -- read direction 0:charge,1:discharge ")
     print("")
     print("       tempread             -- read power supply temperature")
     print("       typeread             -- read power supply type")
@@ -111,6 +117,16 @@ def can_receive():
     msgr = str(can0.recv(0.5))
     msgr_split = msgr.split()
     hexval = (msgr_split[11]+ msgr_split[10])
+    print (int(hexval,16))
+    
+    if msgr is None:
+        print('Timeout occurred, no message.')
+    return hexval
+
+def can_receive_byte():
+    msgr = str(can0.recv(0.5))
+    msgr_split = msgr.split()
+    hexval = (msgr_split[10])
     print (int(hexval,16))
     
     if msgr is None:
@@ -152,6 +168,16 @@ def operation(val):#0=off, 1=on
     can0.send(msg)
     return val
 
+def operation_read():
+    # print (Read status "output on/off")
+    # Command Code 0x0000
+    commandhighbyte = 0x00
+    commandlowbyte = 0x00
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    v = can_receive_byte()
+    return v
 
 
 def charge_voltage(rw,val=0xFFFF): #0=read, 1=set
@@ -351,16 +377,29 @@ def init_mode():
 
 
 def BIC_chargemode(val): #0=charge, 1=discharge
-    # print ("set direction charge")
+    # print ("set charge/discharge")
     # Command Code 0x0100
     # Set Direction Charge
 
     commandhighbyte = 0x01
     commandlowbyte = 0x00
-    #val = 0x00
 
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,val], is_extended_id=True)
     can0.send(msg)
+
+def BIC_chargemode_read():
+    # print ("read charge/discharge mode")
+    # Command Code 0x0100
+    # Read Direction charge/discharge
+
+    commandhighbyte = 0x01
+    commandlowbyte = 0x00
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    v = can_receive_byte()
+    return v
+
 
 
 def NPB_chargemode(rw, val=0xFF):
@@ -543,7 +582,7 @@ def faultread():
     if s == 0:
         print ("HI_TEMP: Internal temperature normal")
     else:
-        print ("HI_TEMP: Internal temperature abnormal")
+        print ("HI_TEMP: Internal temperature abnormal:")
  
     s = get_normalized_bit(int(sval), bit_index=8)
     if s == 0:
@@ -564,6 +603,7 @@ def command_line_argument():
     
     if   sys.argv[1] in ['on']:        operation(1)
     elif sys.argv[1] in ['off']:       operation(0)
+    elif sys.argv[1] in ['statusread']:operation_read()
     elif sys.argv[1] in ['cvread']:    charge_voltage(0)
     elif sys.argv[1] in ['cvset']:     charge_voltage(1)
     elif sys.argv[1] in ['ccread']:    charge_current(0)
@@ -577,6 +617,7 @@ def command_line_argument():
     elif sys.argv[1] in ['acvread']:   acvread()
     elif sys.argv[1] in ['charge']:    BIC_chargemode(0)
     elif sys.argv[1] in ['discharge']: BIC_chargemode(1)
+    elif sys.argv[1] in ['dirread']:   BIC_chargemode_read()
     elif sys.argv[1] in ['tempread']:  tempread()
     elif sys.argv[1] in ['typeread']:  typeread()
     elif sys.argv[1] in ['statusread']:statusread()
