@@ -94,6 +94,7 @@ def bic22_commands():
     print("       typeread             -- read power supply type")
     print("       statusread           -- read power supply status")
     print("       faultread            -- read power supply fault status")    
+    print("")
     print("       can_up               -- start can bus")
     print("       can_down             -- shut can bus down")
     print("")

@@ -7,12 +7,12 @@ Please note:  this tool is not yet complete and also not fully tested. Do not us
 
 What is missing:
 - variables plausibility check
-- some functions
 
        Usage: ./bic2200.py parameter value
        
        on                   -- output on
        off                  -- output off
+       statusread           -- read output status 1:on 0:off 
 
        cvread               -- read charge voltage setting
        cvset <value>        -- set charge voltage
@@ -30,6 +30,7 @@ What is missing:
 
        charge               -- set direction charge battery
        discharge            -- set direction discharge battery
+       dirread              -- read direction 0:charge,1:discharge
 
        tempread             -- read power supply temperature
        typeread             -- read power supply type
@@ -42,6 +43,8 @@ What is missing:
        init_mode            -- init BIC-2200 bi-directional battery mode
 
        <value> = amps oder volts * 100 --> 25,66V = 2566 
+
+
 
         
 # examples/example_charge_contro.py        
