@@ -582,7 +582,7 @@ def faultread():
     if s == 0:
         print ("HI_TEMP: Internal temperature normal")
     else:
-        print ("HI_TEMP: Internal temperature abnormal:")
+        print ("HI_TEMP: Internal temperature abnormal")
  
     s = get_normalized_bit(int(sval), bit_index=8)
     if s == 0:
