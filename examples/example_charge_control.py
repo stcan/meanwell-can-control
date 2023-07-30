@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # example for using bic2200.py
-# Version 0.4
+# Version 0.8
 import sys
 import time
 import schedule
@@ -13,10 +13,10 @@ import configparser
 
 from func_timeout import func_timeout, FunctionTimedOut
 
-# Safe values for voltages and currents limiting to high oder low values in the config file
+# Safe Values for Voltages and Currents 
 SafeChargeVoltage = 2750
 SafeDischargeVoltage = 2520
-SafeChargeCurrent = 2600
+SafeChargeCurrent = 3100
 SafeDischargeCurrent = 2600
 
 config = configparser.ConfigParser()
@@ -27,11 +27,26 @@ ChargeVoltage = int(config.get('Settings', 'ChargeVoltage'))
 DischargeVoltage = int(config.get('Settings', 'DischargeVoltage'))
 MaxChargeCurrent = int(config.get('Settings', 'MaxChargeCurrent'))
 MaxDischargeCurrent = int(config.get('Settings', 'MaxDischargeCurrent'))
+dischargedelay = int(config.get('Settings', 'DischargeDelay'))
+DCOutput = int(config.get('Control', 'DCOutput'))
 
 
+lastchargetime = time.time()     # Startzeit zur Berechnung der Einspeiseverzögerung
+
+# dischargedelay = 10                   # Variable zu verzögerten Einspeisung um nur
+                                        # bei längeren Verbräuchen einzuspeisen ( in sec)
 
 # Init CAN Bus
 p = subprocess.run(["./bic2200.py" , "can_up"])
+
+
+# Switch on Device
+#if DCOutput == 1:
+#    p = subprocess.run(["./bic2200.py" , "on"])
+#elif DCOutput == 0:
+#    p = subprocess.run(["./bic2200.py" , "off"])
+#else:
+#    print ("Wrong DCOutput value in charge_control.conf. 1 = on, 0 = off")
 
 # Write Charge / Discharge Voltages
 if ChargeVoltage > SafeChargeVoltage:
@@ -47,8 +62,13 @@ def control_power():
 
     #-------------------------------------------------------------- Read Config and Check Values
     config.read('./charge_control.conf')
+    ChargeVoltage = int(config.get('Settings', 'ChargeVoltage'))
+    DischargeVoltage = int(config.get('Settings', 'DischargeVoltage'))
     MaxChargeCurrent = int(config.get('Settings', 'MaxChargeCurrent'))
     MaxDischargeCurrent = int(config.get('Settings', 'MaxDischargeCurrent'))
+    DCOutput = int(config.get('Control', 'DCOutput'))
+
+    global lastchargetime
 
     if MaxChargeCurrent > SafeChargeCurrent:
         MaxChargeCurrent = SafeChargeCurrent
@@ -62,7 +82,7 @@ def control_power():
     #-------------------------------------------------------------- Read Power Meter
     # print ("Control Charge/Discharge")
 
-    stromzaehler = requests.get("http:// --your power meter IP-- /cm?cmnd=status%2010")
+    stromzaehler = requests.get("http://--your power meter ip--/cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
     # zeit = (stromz1['Time'])
@@ -89,6 +109,9 @@ def control_power():
     print ("Calc_Current: ", Current/100)
 
     if Current > 0:
+
+        lastchargetime = time.time()
+
         IntCurrent = int(Current)
 
         if IntCurrent >= MaxChargeCurrent:
@@ -98,30 +121,40 @@ def control_power():
         p = subprocess.run(["./bic2200.py" , "charge"])
         c = subprocess.run(["./bic2200.py" , "ccset" ,  str(IntCurrent)]) 
 
-    if Current < -10: 
+    if Current < -10:
+        dischargetime = time.time()
+       
         IntCurrent = int(Current*(-1)) 
 
         if IntCurrent >= MaxDischargeCurrent:
             IntCurrent = MaxDischargeCurrent  
         
-        
+        if dischargetime - lastchargetime > dischargedelay:         
+            
+            print ("Verzögerte Einspeisung")
+            OutCurrent = IntCurrent
+    
+        else:
+            print ("Warten auf Einspeisung")
+            OutCurrent = 0
 
         p = subprocess.run(["./bic2200.py" , "discharge"])
-        c = subprocess.run(["./bic2200.py" , "dcset", str(IntCurrent)]) 
+        c = subprocess.run(["./bic2200.py" , "dcset", str(OutCurrent)]) 
 
-    
+             
 
     # ---------------------------------------------------------------------------Logging 
     logfile = open('./battery.log','a')
-    logfile.write(str(zeit) + ": PowerMeter:" + str(Power) + ":W: Battery_V:" + str(volt_now/100) + ":V: Battery_I:" + str(amp_now/100) + ":A: I Calc:" + str(Current/100)+":A \n")
+    logfile.write(str(zeit) + ",PowerMeter," + str(Power) + ",W,Battery_U," + str(volt_now/100) + ",V,Battery_I," + str(amp_now/100) + ",A,I Calc," + str(Current/100)+",A \n")
     logfile.close()
 
 
 
-schedule.every(3).seconds.do(control_power)      # Aufruf der Regelroutine ca alle 3s
+# schedule.every(4).seconds.do(control_power)      # Aufruf der Regelroutine ca alle 5s
 
 while True:
-     schedule.run_pending()
-     #time.sleep(1)
+     control_power()
+     time.sleep(1)
 
+     #schedule.run_pending()
 
