@@ -14,5 +14,6 @@ cron job is running everery 2 seconds to check if the charge_control.py script i
 
 */2 * * * * /home/pi/bin/check_process.sh > /dev/null 2>&1
 
+To stop the charge_control script the crontab entry has to be deactivated and the script has to be stopped.
 
 All scripts are without any warranty. Use at your own risk
