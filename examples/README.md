@@ -12,8 +12,8 @@ Do not use without adaptation to local conditions and under supervision!
 
 Runs everery 2 seconds to check if the charge_control.py script is working.
 
+-- crontab 
 */2 * * * * /home/pi/bin/check_process.sh > /dev/null 2>&1
 
-# --
 
-- All scripts are without any warranty. Use at your own risk
+All scripts are without any warranty. Use at your own risk
