@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # example for using bic2200.py
-# Version 0.8
+# Version 0.10
 import sys
 import time
 import schedule
@@ -16,7 +16,7 @@ from func_timeout import func_timeout, FunctionTimedOut
 # Safe Values for Voltages and Currents 
 SafeChargeVoltage = 2750
 SafeDischargeVoltage = 2520
-SafeChargeCurrent = 3100
+SafeChargeCurrent = 3500
 SafeDischargeCurrent = 2600
 
 config = configparser.ConfigParser()
@@ -82,7 +82,7 @@ def control_power():
     #-------------------------------------------------------------- Read Power Meter
     # print ("Control Charge/Discharge")
 
-    stromzaehler = requests.get("http://--your power meter ip--/cm?cmnd=status%2010")
+    stromzaehler = requests.get("http://stromzaehler.fritz.box/cm?cmnd=status%2010")
     stromz = stromzaehler.json()
     stromz1 = (stromz['StatusSNS'])
     # zeit = (stromz1['Time'])
@@ -108,7 +108,7 @@ def control_power():
     Current = DiffCurrent + amp_now
     print ("Calc_Current: ", Current/100)
 
-    if Current > 0:
+    if Current > 10:
 
         lastchargetime = time.time()
 
@@ -138,6 +138,7 @@ def control_power():
             print ("Warten auf Einspeisung")
             OutCurrent = 0
 
+
         p = subprocess.run(["./bic2200.py" , "discharge"])
         c = subprocess.run(["./bic2200.py" , "dcset", str(OutCurrent)]) 
 
@@ -154,7 +155,7 @@ def control_power():
 
 while True:
      control_power()
-     time.sleep(1)
+     time.sleep(3)
 
      #schedule.run_pending()
 
