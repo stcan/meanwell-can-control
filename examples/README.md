@@ -4,6 +4,8 @@ Example code to control battery charging and discharging depending on the electr
 
 New feature : Control the max and min values for charge/discharge voltages and currents using the file: examples/charge_control.conf
 
+Please rename example_charge_control.py to charge_control.py to get it working with the check_process.sh
+
 Do not use without adaptation to local conditions and under supervision! 
 
 # check_process.sh

@@ -47,7 +47,7 @@ What is missing:
 
 
         
-# examples/charge_contro.py        
+# examples/_example_charge_contro.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
 
 Do not use without adaptation to local conditions and only under supervision! 
