@@ -1,0 +1,17 @@
+        
+# example_charge_control.py        
+Example code to control battery charging and discharging depending on the electricity meter. 
+
+New feature : Control the max and min values for charge/discharge voltages and currents using the file: examples/charge_control.conf
+
+Do not use without adaptation to local conditions and under supervision! 
+
+# check_process.sh
+
+Runs everery 2 seconds to check if the charge_control.py script is working.
+
+*/2 * * * * /home/pi/bin/check_process.sh > /dev/null 2>&1
+
+# --
+
+- All scripts are without any warranty. Use at your own risk

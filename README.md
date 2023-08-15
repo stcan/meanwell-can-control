@@ -47,12 +47,9 @@ What is missing:
 
 
         
-# examples/example_charge_contro.py        
+# examples/charge_contro.py        
 Example code to control battery charging and discharging depending on the electricity meter. 
-
-New feature : Control the max and min values for charge/discharge voltages and currents using the file: examples/charge_control.conf
-
 
 Do not use without adaptation to local conditions and only under supervision! 
 
-- All scripts are without any warranty. Use at your own risk
+# All scripts are without any warranty. Use at your own risk
