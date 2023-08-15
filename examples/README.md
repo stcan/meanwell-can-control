@@ -10,9 +10,8 @@ Do not use without adaptation to local conditions and under supervision!
 
 # check_process.sh
 
-Runs everery 2 seconds to check if the charge_control.py script is working.
+cron job is running everery 2 seconds to check if the charge_control.py script is working. If not, the script is restarted and the restart is logged.
 
--- crontab 
 */2 * * * * /home/pi/bin/check_process.sh > /dev/null 2>&1
 
 
