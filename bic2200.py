@@ -25,10 +25,12 @@
 # steve 09.07.2023  Version 0.2.5
 #       - init_mode added   
 # steve 20.07.2023 Version 0.2.6
-#       - direction read
-#       - status read
+#       - directionread
+#       - statusread
 #       - can_receive_byte  
-       
+# steve 06.02.2024 Version 0.2.7
+#       - rename first variable statusread to outputread
+#       - statusread now fully functional          
 
 import os
 import can
@@ -56,6 +58,7 @@ CAN_ADR = 0x000C0300
 #########################
 #If you use a RS232 to CAN Adapter which ich socketCAN compartible, switch to 1
 #e.g. USB-Tin www.fischl.de
+# If you use a CAN Hat (waveshare) set USE_RS232_CAN = 0
 #Add the rigth /dev/tty device here 
 USE_RS232_CAN = 0
 CAN_DEVICE = '/dev/ttyACM0'
@@ -70,7 +73,7 @@ def bic22_commands():
     print("")
     print("       on                   -- output on")
     print("       off                  -- output off")
-    print("       statusread           -- read output status 1:on 0:off")
+    print("       outputread           -- read output status 1:on 0:off")
     print("")
     print("       cvread               -- read charge voltage setting")
     print("       cvset <value>        -- set charge voltage")
@@ -604,7 +607,7 @@ def command_line_argument():
     
     if   sys.argv[1] in ['on']:        operation(1)
     elif sys.argv[1] in ['off']:       operation(0)
-    elif sys.argv[1] in ['statusread']:operation_read()
+    elif sys.argv[1] in ['outputread']:operation_read()
     elif sys.argv[1] in ['cvread']:    charge_voltage(0)
     elif sys.argv[1] in ['cvset']:     charge_voltage(1)
     elif sys.argv[1] in ['ccread']:    charge_current(0)
