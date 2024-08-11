@@ -3,34 +3,44 @@
 # bic2200.py
 # Controlling the Mean Well BIC-2200-CAN
 # tested only with the 24V Version BIC-2200-CAN-24
-# Please note:  this software to control the BIC-2200 is not yet complete 
-# and also not fully tested. The BIC-2200 should not be operated unattended. 
+# Please note:  this software to control the BIC-2200 is not yet complete
+# and also not fully tested. The BIC-2200 should not be operated unattended.
 # There is no error handling yet !!!
 
 # What is missing:
 # - error handling
 # - variables plausibility check
-# - programming missing functions 
+# - programming missing functions
 # - current and voltage maximum settings
 
 # steve 08.06.2023  Version 0.2.1
 # steve 10.06.2023  Version 0.2.2
 # macGH 15.06.2023  Version 0.2.3
 #       - support for Meanwell NPB-x Charger
-#       - new config area   
+#       - new config area
 # steve 16.06.2023  Version 0.2.4
-#       - fault and status queries    
+#       - fault and status queries
 # steve 19.06.2023  Version 0.2.4
-#       - fault queries completed  
+#       - fault queries completed
 # steve 09.07.2023  Version 0.2.5
-#       - init_mode added   
+#       - init_mode added
 # steve 20.07.2023 Version 0.2.6
 #       - directionread
 #       - statusread
-#       - can_receive_byte  
+#       - can_receive_byte
 # steve 06.02.2024 Version 0.2.7
 #       - rename first variable statusread to outputread
-#       - statusread now fully functional          
+#       - statusread now fully functional
+# steve 12.05.2024 Version 0.2.8
+#       - new firmware with eeprom write control
+#       - new config area für eepreom write control
+# steve 15.05.2024 Version 0.2.9
+#       - init_mode removed
+#       - error handling improved submitted from hamstie
+#       - Firmware revsion read
+# steve 11.08.2024 Version 0.3
+#       - new function - read spped fan - 1 und 2
+#       - adapt to firmware xxxxx
 
 import os
 import can
@@ -46,7 +56,7 @@ error = 0
 #########################
 #ID = Cortroller Message ID + Device ID [00-07]
 #Be sure you select the right CAN_ADR and add your Device-ID (Jumper block)
-#BIC-2200 00 - 07, NPB 00 - 03  
+#BIC-2200 00 - 07, NPB 00 - 03
 #
 #BIC-2200
 CAN_ADR = 0x000C0300
@@ -59,10 +69,33 @@ CAN_ADR = 0x000C0300
 #If you use a RS232 to CAN Adapter which ich socketCAN compartible, switch to 1
 #e.g. USB-Tin www.fischl.de
 # If you use a CAN Hat (waveshare) set USE_RS232_CAN = 0
-#Add the rigth /dev/tty device here 
+#Add the rigth /dev/tty device here
 USE_RS232_CAN = 0
 CAN_DEVICE = '/dev/ttyACM0'
 #########################
+
+#########################
+# BIC-2200 SYSTEM Configutation
+#
+# Is the device controlled over CAN BUS
+# 0x00 : SVR
+# 0x01 : CAN-BUS (recommended)
+CAN_control = 0x01
+# Power on state:
+# 0x00 : Power Off
+# 0x01 : Power On
+# 0x04 : Last State (recommended)
+Power_on_state = 0x04
+#EEPROM Storage Function
+# 0x00 : Enable, Parameters are saved into EEPROM (recommended ?)
+# 0x04 : Disable, Parameters are not into EEPROM
+EEPROM_Storage = 0x00
+# EEPROM Configuration
+# 0x00 : Immediate written every parameter
+# 0x01 : 1 Minute delay for writing parameters when all are unchanged (recommended)
+# 0x02 : 10 Minutes delay for writing parameters when all are unchanged (recommended)
+EEPROM_Config = 0x02
+###########################
 
 def bic22_commands():
     print("")
@@ -94,14 +127,18 @@ def bic22_commands():
     print("       dirread              -- read direction 0:charge,1:discharge ")
     print("")
     print("       tempread             -- read power supply temperature")
-    print("       typeread             -- read power supply type")
-    print("       statusread           -- read power supply status")
-    print("       faultread            -- read power supply fault status")    
+    print("       fanread              -- read fan 1 and 2 revs.")
+    print("")
+    print("       typeread             -- read type")
+    print("       fwread               -- read firmware version")
+    print("       statusread           -- read status")
+    print("       faultread            -- read fault status")
+    print("       configread           -- read control and eeprom mode")
+    print("       configset            -- set control and eeprom mode")
+    print("       batterymodeset       -- set battery mode")
     print("")
     print("       can_up               -- start can bus")
     print("       can_down             -- shut can bus down")
-    print("")
-    print("       init_mode            -- init BIC-2200 bi-directional battery mode")
     print("")
     print("       <value> = amps oder volts * 100 --> 25,66V = 2566")
     print("")
@@ -114,36 +151,37 @@ def set_bit(value, bit):
 
 def clear_bit(value, bit):
     return value & ~(1<<bit)
-    
+
 #########################################
 # receive function
 def can_receive():
-    msgr = str(can0.recv(0.5))
-    msgr_split = msgr.split()
+    msgr = can0.recv(0.5)
+    if msgr is None:
+       print('Timeout occurred, no message.')
+       raise TimeoutError()
+    msgr_split = str(msgr).split()
     hexval = (msgr_split[11]+ msgr_split[10])
     print (int(hexval,16))
-    
-    if msgr is None:
-        print('Timeout occurred, no message.')
     return hexval
 
 def can_receive_byte():
-    msgr = str(can0.recv(0.5))
-    msgr_split = msgr.split()
+    msgr = can0.recv(0.5)
+    if msgr is None:
+       print('Timeout occurred, no message.')
+       raise TimeoutError()
+    msgr_split = str(msgr).split()
     hexval = (msgr_split[10])
     print (int(hexval,16))
-    
-    if msgr is None:
-        print('Timeout occurred, no message.')
     return hexval
 
 def can_receive_char():
-    msgr = str(can0.recv(0.5))
-    msgr_split = msgr.split()
+    msgr = can0.recv(0.5)
+    if msgr is None:
+       print('Timeout occurred, no message.')
+       raise TimeoutError()
+    msgr_split = str(msgr).split()
     s = bytearray.fromhex(msgr_split[10]+msgr_split[11]+msgr_split[12]+msgr_split[13]+msgr_split[14]+msgr_split[15]).decode()
     #print(s)
-    if msgr is None:
-        print('Timeout occurred, no message.')
     return s
 
 #########################################
@@ -155,7 +193,7 @@ def can_up():
     else:
         os.system('sudo slcand -f -s5 -c -o ' + CAN_DEVICE)
         os.system('sudo ip link set up can0')
-    
+
 def can_down():
     os.system('sudo ip link set can0 down')
 
@@ -190,7 +228,7 @@ def charge_voltage(rw,val=0xFFFF): #0=read, 1=set
     # Read Charge Voltage
     commandhighbyte = 0x00
     commandlowbyte = 0x20
-    
+
     if rw==0:
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
         can0.send(msg)
@@ -202,7 +240,7 @@ def charge_voltage(rw,val=0xFFFF): #0=read, 1=set
         v=val
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
         can0.send(msg)
-        
+ 
     return v
 
 def charge_current(rw,val=0xFFFF): #0=read, 1=set
@@ -211,7 +249,7 @@ def charge_current(rw,val=0xFFFF): #0=read, 1=set
     # Read Charge Voltage
     commandhighbyte = 0x00
     commandlowbyte = 0x30
-    
+
     if rw==0:
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
         can0.send(msg)
@@ -223,7 +261,7 @@ def charge_current(rw,val=0xFFFF): #0=read, 1=set
         v=val
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
         can0.send(msg)
-        
+
     return v
 
 def discharge_voltage(rw,val=0xFFFF): #0=read, 1=set
@@ -232,7 +270,7 @@ def discharge_voltage(rw,val=0xFFFF): #0=read, 1=set
     # Read Charge Voltage
     commandhighbyte = 0x01
     commandlowbyte = 0x20
-    
+
     if rw==0:
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
         can0.send(msg)
@@ -244,7 +282,7 @@ def discharge_voltage(rw,val=0xFFFF): #0=read, 1=set
         v=val
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
         can0.send(msg)
-        
+
     return v
 
 def discharge_current(rw,val=0xFFFF): #0=read, 1=set
@@ -253,7 +291,7 @@ def discharge_current(rw,val=0xFFFF): #0=read, 1=set
     # Read Charge Voltage
     commandhighbyte = 0x01
     commandlowbyte = 0x30
-    
+
     if rw==0:
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
         can0.send(msg)
@@ -265,9 +303,8 @@ def discharge_current(rw,val=0xFFFF): #0=read, 1=set
         v=val
         msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
         can0.send(msg)
-        
     return v
-  
+
 
 def vread():
     # print ("read dc voltage")
@@ -279,7 +316,7 @@ def vread():
 
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
-    
+
     v = can_receive()
     return v
 
@@ -293,22 +330,22 @@ def cread():
 
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
- 
+
     msgr = str(can0.recv(0.5))
     msgr_split = msgr.split()
     hexval = (msgr_split[11]+ msgr_split[10])
 
     # quick and primitive solution to determine the 
     # negative charging current when discharging the battery
-    
+
     cval = (int(hexval,16))
     if cval > 20000 :
         cval = cval - 65536
-    
+
     print (cval)
 
     return cval
-   
+
 
 def acvread():
     # print ("read ac voltage")
@@ -323,18 +360,23 @@ def acvread():
     v = can_receive()
     return v
 
-
-def init_mode():
-
-    # Check CANBus communication mode
+def configset():
+    # CANBus config set
     # Command Code 0x00C2
     commandhighbyte = 0x00
     commandlowbyte = 0xC2
 
-    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte], is_extended_id=True)
-    can0.send(msg)
-    cm = can_receive()
+    valhighbyte = EEPROM_Storage + EEPROM_Config
+    vallowbyte  = CAN_control + Power_on_state
 
+    print (valhighbyte)
+    print (vallowbyte)
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
+    can0.send(msg)
+
+
+def batterymodeset():
     # Check the battery mode
     # Command Code 0x0140
     # Check Battery mode
@@ -344,40 +386,30 @@ def init_mode():
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte], is_extended_id=True)
     can0.send(msg)
     bm = can_receive()
-    
-    if ((bm == "0001") and (cm == "0003")):
+
+    if (bm == "0001"):
         print ("The BIC-2200-xx-CAN is alread in the bi-directional battery mode with CANBus control. Nothing to do")
-    
+
     else:
-        
+
         print ("Set the Charge/Discharge Mode of the BIC-2200-xx-CAN.")
         print ("Only needed once to set up the Device and to configure the 'bi-directional battery mode'.")
         print ("It is recommended do disconnect the battery/load for this operation.")
         print ("Check manual if you are not shure what is the correct mode!")
         modein = input ("Do you want to change the mode? yes/no : ")
-        
-        if modein == "yes":
-            # Command Code 0x00C2
-            # Activate CANBus communication mode
-            commandhighbyte = 0x00
-            commandlowbyte = 0xC2
-            val = 0x03
-            msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,val], is_extended_id=True)
-            #can0.send(msg)
-    
-            time.sleep(1)
 
+        if modein == "yes":
             # Command Code 0x0140
             # Set bi-directional battery mode
             commandhighbyte = 0x01
             commandlowbyte = 0x40
-            val = 0x01
+            vallowbyte = 0x01
+            valhighbyte = 0x00
 
-            msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,val], is_extended_id=True)
-            #can0.send(msg)
+            msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte, commandhighbyte,vallowbyte,valhighbyte], is_extended_id=True)
+            can0.send(msg)
 
             print ("Repower the device to activate the new mode")
-
 
 
 def BIC_chargemode(val): #0=charge, 1=discharge
@@ -404,8 +436,6 @@ def BIC_chargemode_read():
     v = can_receive_byte()
     return v
 
-
-
 def NPB_chargemode(rw, val=0xFF):
     # print ("Set PSU or Charger Mode to NPB Device")
     # Command Code 0x00B4
@@ -416,7 +446,7 @@ def NPB_chargemode(rw, val=0xFF):
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
     v = int(can_receive(),16)
-    
+
     if rw==1: #0=read, 1=write
         #modify Bit 7 of Lowbyte
         if val==0xFF: val=int(sys.argv[3])
@@ -456,10 +486,25 @@ def typeread():
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
     s2 = can_receive_char()
-    
+
     s=s1+s2
     print(s)
     return s
+
+def fwread():
+    # print ("read power firmware revision")
+    # Command Code 0x0084
+    # Read firmware revision
+
+    commandhighbyte = 0x00
+    commandlowbyte = 0x84
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    s = can_receive()
+    print (s)
+    return s
+
 
 def tempread():
     # print ("read power supply temperature")
@@ -474,6 +519,31 @@ def tempread():
     v = can_receive()
     return v
 
+def fanread():
+    # print ("read fan speed")
+    # Command Code 0x0070 (Fan1)
+    # Command Code 0x0071 (Fan2)
+    # Read Fan Speed
+
+    commandhighbyte = 0x00
+    commandlowbyte = 0x70
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    v = can_receive()
+    #return v
+
+    commandhighbyte = 0x00
+    commandlowbyte = 0x71
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    w = can_receive()
+    #return w
+    #return str(v+";"+w)
+
+
+
 def get_normalized_bit(value, bit_index):
     return (value >> bit_index) & 1
 
@@ -481,57 +551,57 @@ def statusread():
     # print ("Read System Status")
     # Command Code 0x00C1
     # Read System Status
-    
+
     commandhighbyte = 0x00
     commandlowbyte = 0xC1
 
     msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
     can0.send(msg)
     sval = can_receive()
-    
-    # deconding 
+
+    # deconding
     s = get_normalized_bit(int(sval), bit_index=0)
     if s == 0:
         print ("Current Device is Slave")
     else:
         print ("Current Device is Master")
-    
+
     s = get_normalized_bit(int(sval), bit_index=1)
     if s == 0:
         print ("Secondary DD output Status TOO LOW")
     else:
-        print ("Secondary DD output Status NORMAL")     
-        
+        print ("Secondary DD output Status NORMAL")
+
     s = get_normalized_bit(int(sval), bit_index=2)
     if s == 0:
         print ("Primary PFC OFF oder abnormal")
     else:
-        print ("Primary PFC ON normally")  
-        
+        print ("Primary PFC ON normally")
+
     s = get_normalized_bit(int(sval), bit_index=3)
     if s == 0:
         print ("Active Dummy Load off / not_supported")
     else:
         print ("Active Dummy Load on")
-    
+
     s = get_normalized_bit(int(sval), bit_index=4)
     if s == 0:
         print ("Device in initialization status")
     else:
-        print ("NOT in initialization status")     
-        
+        print ("NOT in initialization status")
+
     s = get_normalized_bit(int(sval), bit_index=5)
     if s == 0:
         print ("EEPROM data access normal")
     else:
-        print ("EEPROM data access error") 
-    
-        
+        print ("EEPROM data access error")
+
+
 def faultread():
     # print ("Read System Fault Status")
     # Command Code 0x0040
     # Read System Fault Status
-    
+
     commandhighbyte = 0x00
     commandlowbyte = 0x40
 
@@ -587,15 +657,58 @@ def faultread():
         print ("HI_TEMP: Internal temperature normal")
     else:
         print ("HI_TEMP: Internal temperature abnormal")
- 
+
     s = get_normalized_bit(int(sval), bit_index=8)
     if s == 0:
         print ("HV_OVP: HV voltage normal")
     else:
         print ("HV_OVP: HV over voltage preotected")
 
+def configread():
+    # print ("Read System Config")
+    # Command Code 0x00C2
+    # Read System Config
 
- 
+    commandhighbyte = 0x00
+    commandlowbyte = 0xC2
+
+    msg = can.Message(arbitration_id=CAN_ADR, data=[commandlowbyte,commandhighbyte], is_extended_id=True)
+    can0.send(msg)
+    sval = can_receive()
+    hiby, lowby  = sval[1:2], sval[3:4]
+    print ("Low Byte: ",lowby," High Byte: ",hiby)
+
+    # deconding
+    s = get_normalized_bit(int(lowby), bit_index=0)
+    if s == 0:
+        print ("Output is controlled over SVR")
+    else:
+        print ("Output ist controlled over CAN-BUS")
+
+    s = get_normalized_bit(int(lowby), bit_index=1)
+    t = get_normalized_bit(int(lowby), bit_index=2)
+    if s == 0 and t == 0:
+        print ("Device Start = Power off")
+    if s == 1 and t == 0:
+        print ("Device Start = Power on")
+    if s == 0 and t == 1:
+        print ("Device Start = Power last state")
+
+    s = get_normalized_bit(int(hiby), bit_index=0)
+    t = get_normalized_bit(int(hiby), bit_index=1)
+    if s == 0 and t == 0:
+        print ("EEPROM written immeditate ")
+    if s == 1 and t == 0:
+        print ("EEPROM written 1 minute delay")
+    if s == 0 and t == 1:
+        print ("EEPROM written 10 minutes delay")
+
+    u = get_normalized_bit(int(hiby), bit_index=2)
+    if u == 0:
+        print ("Parameters are saved into EEPROM")
+    if u == 1:
+        print ("Parameters are NOT saved into EEPROM")
+
 
 def command_line_argument():
     if len (sys.argv) == 1:
@@ -604,7 +717,7 @@ def command_line_argument():
         bic22_commands()
         error = 1
         return
-    
+
     if   sys.argv[1] in ['on']:        operation(1)
     elif sys.argv[1] in ['off']:       operation(0)
     elif sys.argv[1] in ['outputread']:operation_read()
@@ -623,12 +736,16 @@ def command_line_argument():
     elif sys.argv[1] in ['discharge']: BIC_chargemode(1)
     elif sys.argv[1] in ['dirread']:   BIC_chargemode_read()
     elif sys.argv[1] in ['tempread']:  tempread()
+    elif sys.argv[1] in ['fanread']: fanread()
     elif sys.argv[1] in ['typeread']:  typeread()
+    elif sys.argv[1] in ['fwread']:    fwread()
     elif sys.argv[1] in ['statusread']:statusread()
     elif sys.argv[1] in ['faultread']: faultread()
+    elif sys.argv[1] in ['configread']: configread()
     elif sys.argv[1] in ['can_up']:    can_up()
     elif sys.argv[1] in ['can_down']:  can_down()
-    elif sys.argv[1] in ['init_mode']: init_mode()
+    elif sys.argv[1] in ['configset']: configset()
+    elif sys.argv[1] in ['batterymodeset']: batterymodeset()
     elif sys.argv[1] in ['NPB_chargemode']: NPB_chargemode(int(sys.argv[2]))
     else:
         print("")
