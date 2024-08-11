@@ -54,21 +54,32 @@ What is missing:
 - Connect the BIC2200 CAN Bus to the Computer/Raspberry Pi/... 
 - Do not connect the battery !!! That is very important, because the BIC2200 is in SVR mode and therefore it is impossible to control it via CAN BUS.
 - Connect 230V AC and switch the device on.
-- Check if the communication is working. 
+- Check if the communication is working.
+ 
       ./bic2200.py configread
-- Edit bic2200.py to set 
+
+- Edit bic2200.py to set
+ 
       CAN_control = 0x01
       Power_on_state = 0x04
       EEPROM_Storage = 0x00
       EEPROM_Config = 0x02
+
    The alternatives are described in the software and the manual.
 -  Activate the CAN communication and control of EEPROM writing.
+
       ./bic2200.py configset 
+
 -  Activate the "Bidirectional Battery Mode" which we need to control the BIC2200 via CAN
+
       ./bic2200.py batterymodeset
+
 - Power the device off and on, now the battery mode ist active. Check with "
+
       ./bic2200.py configread
+
 - Set values for voltages an currents. For my 8s 24V system I start with
+
       ./bic2200.py cvset 2700
       ./bic2200.py dvset 2400
       ./bic2200.py ccset 0
