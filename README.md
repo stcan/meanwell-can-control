@@ -9,7 +9,7 @@ What is missing:
 - variables plausibility check
 
        Usage: ./bic2200.py parameter value
-       
+
        on                   -- output on
        off                  -- output off
        statusread           -- read output status 1:on 0:off 
@@ -33,20 +33,54 @@ What is missing:
        dirread              -- read direction 0:charge,1:discharge
 
        tempread             -- read power supply temperature
-       typeread             -- read power supply type
-       statusread           -- read power supply status
-       faultread            -- read power supply fault status
+       fanread              -- read fan 1 and 2 revs.
+
+       typeread             -- read type
+       fwread               -- read firmware version
+       statusread           -- read status
+       faultread            -- read fault status
+       configread           -- read control and eeprom mode
+       configset            -- set control and eeprom mode
+       batterymodeset       -- set battery mode
 
        can_up               -- start can bus
        can_down             -- shut can bus down
 
-       init_mode            -- init BIC-2200 bi-directional battery mode
-
        <value> = amps oder volts * 100 --> 25,66V = 2566 
 
 
+#  Steps to put a new BIC into operation
 
-        
+- Connect the BIC2200 CAN Bus to the Computer/Raspberry Pi/... 
+- Do not connect the battery !!! That is very important, because the BIC is in SVR Mode and therefore it is impossible to cotrol it via CAN BUS.
+- Connect 230V AC and switch the device on.
+- Check if the communication is working. 
+      ./bic2200.py configread
+- Edit bic2200.py to set 
+      CAN_control = 0x01
+      Power_on_state = 0x04
+      EEPROM_Storage = 0x00
+      EEPROM_Config = 0x02
+   The alternatives are described in the software and the manual
+-  Activate the CAN communication and control EEPROM writing
+      ./bic2200.py configset 
+-  Activate the "Bidirectional Battery Mode" which we need to control the BIC2200 via CAN
+      ./bic2200.py batterymodeset
+- Power the device off an on, now the battery mode ist active. Check with "
+      ./bic2200.py configread
+- Set Values for Voltages an currents. For my 8s 24V System I start with
+      ./bic2200.py cvset 2700
+      ./bic2200.py dvset 2400
+      ./bic2200.py ccset 0
+      ./bic2200.py dcset 0
+
+      ./bic2200.py dirset charge
+      ./bic2200.py off
+
+- Now switch the device off and connect the battery
+- Switch AC Power on and you have full control with the bic2200.px software
+ 
+
 # examples        
 Example code to control battery charging and discharging depending on the electricity meter. 
 
