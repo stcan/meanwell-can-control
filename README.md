@@ -49,10 +49,10 @@ What is missing:
        <value> = amps oder volts * 100 --> 25,66V = 2566 
 
 
-#  Steps to put a new BIC into operation
+### Some steps to put a new BIC2200-XX-CAN into operation
 
 - Connect the BIC2200 CAN Bus to the Computer/Raspberry Pi/... 
-- Do not connect the battery !!! That is very important, because the BIC is in SVR Mode and therefore it is impossible to cotrol it via CAN BUS.
+- Do not connect the battery !!! That is very important, because the BIC2200 is in SVR mode and therefore it is impossible to control it via CAN BUS.
 - Connect 230V AC and switch the device on.
 - Check if the communication is working. 
       ./bic2200.py configread
@@ -61,14 +61,14 @@ What is missing:
       Power_on_state = 0x04
       EEPROM_Storage = 0x00
       EEPROM_Config = 0x02
-   The alternatives are described in the software and the manual
--  Activate the CAN communication and control EEPROM writing
+   The alternatives are described in the software and the manual.
+-  Activate the CAN communication and control of EEPROM writing.
       ./bic2200.py configset 
 -  Activate the "Bidirectional Battery Mode" which we need to control the BIC2200 via CAN
       ./bic2200.py batterymodeset
-- Power the device off an on, now the battery mode ist active. Check with "
+- Power the device off and on, now the battery mode ist active. Check with "
       ./bic2200.py configread
-- Set Values for Voltages an currents. For my 8s 24V System I start with
+- Set values for voltages an currents. For my 8s 24V system I start with
       ./bic2200.py cvset 2700
       ./bic2200.py dvset 2400
       ./bic2200.py ccset 0
@@ -78,10 +78,10 @@ What is missing:
       ./bic2200.py off
 
 - Now switch the device off and connect the battery
-- Switch AC Power on and you have full control with the bic2200.px software
+- Switch AC Power on and you have full control with the bic2200.py software
  
 
-# examples        
+### examples        
 Example code to control battery charging and discharging depending on the electricity meter. 
 
 All scripts are without any warranty. Use at your own risk
