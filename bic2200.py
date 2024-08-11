@@ -38,7 +38,7 @@
 #       - init_mode removed
 #       - error handling improved submitted from hamstie
 #       - Firmware revsion read
-# steve 11.08.2024 Version 0.3
+# steve 11.08.2024 Version 0.3.0
 #       - new function - read spped fan - 1 und 2
 #       - adapt to firmware xxxxx
 
@@ -142,7 +142,7 @@ def bic22_commands():
     print("")
     print("       <value> = amps oder volts * 100 --> 25,66V = 2566")
     print("")
-    print("       Version 0.2.5 ")
+    print("       Version 0.3.0 ")
 
 #########################################
 # gereral function
