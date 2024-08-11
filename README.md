@@ -70,15 +70,15 @@ What is missing:
 
       ./bic2200.py configset 
 
--  Activate the "Bidirectional Battery Mode" which we need to control the BIC2200 via CAN
+-  Activate the "Bidirectional Battery Mode" which we need to control the BIC2200 via CAN.
 
       ./bic2200.py batterymodeset
 
-- Power the device off and on, now the battery mode ist active. Check with "
+- Power the device off and on, now the battery mode ist active. Check with:
 
       ./bic2200.py configread
 
-- Set values for voltages an currents. For my 8s 24V system I start with
+- Set values for voltages an currents. For my 8s 24V system I start with:
 
       ./bic2200.py cvset 2700
       ./bic2200.py dvset 2400
